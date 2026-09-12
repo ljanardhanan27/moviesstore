@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container py-5">
+  <div class="row justify-content-center">
+    <div class="col-md-6 col-lg-4">
+      <h1 class="mb-4">Sign Up</h1>
+      <form method="post">
+        {% csrf_token %}
+        {{ template_data.form.non_field_errors }}
+        {% for field in template_data.form %}
+        <div class="mb-3">
+          {{ field.errors }}
+          <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+          {{ field }}
+        </div>
+        {% endfor %}
+        <button class="btn btn-primary" type="submit">Create Account</button>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock content %}
