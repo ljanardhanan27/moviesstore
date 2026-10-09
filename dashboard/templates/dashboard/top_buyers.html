@@ -1,0 +1,69 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="p-3">
+    <div class="container">
+        <div class="row mt-3">
+            <div class="col mx-auto mb-3">
+                <h2>Admin Dashboard: Top Buyers</h2>
+                <hr/>
+                {# if top_buyer is None when there are no purchases, we will show a message #}
+                {% if template_data.top_buyer %}
+                <div class="card mb-4">
+                    <div class="card-body">
+                        <h5 class="card-title"> Most Movies Purchased</h5>
+                        <p class="card-text fs-5">
+                            <b>{{ template_data.top_buyer.username }} </b>
+                            | {{ template_data.top_buyer.movies_purchased }}
+                                movie{{ template_data.top_buyer.movies_purchased|pluralize }} purchased 
+                                ({{ template_data.top_buyer.orders_placed }}
+                                order{{ template_data.top_buyer.orders_placed|pluralize }})
+                        </p>
+                        {# if there is another buyer with same number of movies purchased as top buyer #}
+                        {% if template_data.tied_with_top > 0 %}
+                        <p class="text-muted">
+                            Tied with {{ template_data.tied_with_top }} other user {{
+                                template_data.tied_with_top|pluralize
+                            }}
+                        </p>
+                        {% endif %}
+                        <h6>{{ template_data.top_buyer.username }}'s purchases</h6>
+                        <ul class="list-group">
+                            {% for item in template_data.top_buyer_items %}
+                            <li class="list-group-item d-flex justify-content-between">
+                                <span>{{ item.movie__name }}</span>
+                                <span class="badge bg-dark"> x {{ item.quantity }}</span>
+                            </li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                </div>
+                {# table of  buyers with purchases #}
+                <h5>All users ranked by most movies purchased</h5>
+                <table class="table table-bordered table-striped text-center">
+                    <thead>
+                        <tr>
+                            <th scope="col">Rank</th>
+                            <th scope="col">Username</th>
+                            <th scope="col">Movies Purchased</th>
+                            <th scope="col">Orders</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for buyer in template_data.buyers %}
+                        <tr>
+                            <td> {{ forloop.counter }} </td> {# forloop.counter = 1, 2, 3... #}
+                            <td> {{ buyer.username }}</td>
+                            <td> {{ buyer.movies_purchased }}</td>
+                            <td> {{ buyer.orders_placed }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                {% else %}
+                <p>No purchases have been made</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock content %}
