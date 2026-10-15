@@ -2,7 +2,7 @@ from django.shortcuts import render
 from django.contrib.admin.views.decorators import staff_member_required
 from django.db.models import Sum, Count
 from django.contrib.auth.models import User
-from movies.models import Movie
+from movies.models import Movie, Review
 
 from cart.models import Item
 
@@ -71,4 +71,36 @@ def top_movies(request):
     return render(request, 'dashboard/top_movies.html', {'template_data': template_data})
 
 
-    
+@staff_member_required
+def top_commenters(request):
+    commenters = (
+        User.objects.annotate(comments_posted=Count('review'),)
+        .filter(comments_posted__gt=0)
+        .order_by('-comments_posted', 'username')
+        .values('id', 'username', 'comments_posted')
+    )
+
+    top_commenter = commenters[0] if commenters else None
+    top_commenter_reviews = []
+    tied_with_top = 0
+
+    if top_commenter is not None:
+        top_commenter_reviews = (
+            Review.objects
+            .filter(user_id=top_commenter['id'])
+            .values('movie__name', 'comment', 'date')
+            .order_by('-date')
+        )
+        tied_with_top = sum(
+            1 for c in commenters if c['comments_posted'] == top_commenter['comments_posted']
+        ) - 1
+
+    template_data = {
+        'title': 'Top Commenters',
+        'commenters': commenters,
+        'top_commenter': top_commenter,
+        'top_commenter_reviews': top_commenter_reviews,
+        'tied_with_top': tied_with_top,
+    }
+
+    return render(request, 'dashboard/top_commenters.html', {'template_data': template_data})

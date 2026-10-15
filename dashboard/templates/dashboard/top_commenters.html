@@ -1,0 +1,60 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="p-3">
+    <div class="container">
+        <div class="row mt-3">
+            <div class="col mx-auto mb-3">
+                <h2>Admin Dashboard: Top Commenters</h2>
+                <hr/>
+                {% if template_data.top_commenter %}
+                <div class="card mb-4">
+                    <div class="card-body">
+                        <h5 class="card-title"> Most Comments Posted</h5>
+                        <p class="card-text fs-5">
+                            <b>{{ template_data.top_commenter.username }} </b>
+                            | {{ template_data.top_commenter.comments_posted }}
+                                comment{{ template_data.top_commenter.comments_posted|pluralize }} posted 
+                        </p>
+                        {% if template_data.tied_with_top > 0 %}
+                        <p class="text-muted">
+                            Tied with {{ template_data.tied_with_top }} other user{{ template_data.tied_with_top|pluralize }}
+                        </p>
+                        {% endif %}
+                        <h6>{{ template_data.top_commenter.username }}'s comments</h6>
+                        <ul class="list-group">
+                            {% for review in template_data.top_commenter_reviews %}
+                            <li class="list-group-item d-flex justify-content-between">
+                                <span>{{ review.comment }}</span>
+                                <span class="badge bg-dark">{{ review.movie__name }}</span>
+                            </li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                </div>
+                <h5>All users ranked by most comments posted</h5>
+                <table class="table table-bordered table-striped text-center">
+                    <thead>
+                        <tr>
+                            <th scope="col">Rank</th>
+                            <th scope="col">Username</th>
+                            <th scope="col">Comments Posted</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for commenter in template_data.commenters %}
+                        <tr>
+                            <td> {{ forloop.counter }} </td>
+                            <td> {{ commenter.username }}</td>
+                            <td> {{ commenter.comments_posted }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                {% else %}
+                <p>No comments have been made</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock content %}
