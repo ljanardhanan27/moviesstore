@@ -1,0 +1,171 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<link rel="stylesheet" href="https://unkpg.com/leaflet@1.9.4/dist/leaflet.css">
+
+<div class="container py-4">
+    <h2>Local Popularity Map</h2>
+
+    <p>
+        Explore the top 5 movies by copies purchased in each 
+        region during the last 30 days.
+    </p>
+
+    <p class="text-muted small">
+        Regions are selected by buyers at checkout.
+        Orders without a region are excluded.
+    </p>
+
+    <label for="region-select" class="form-label">
+        Select a region
+    </label>
+
+    <select id="region-select" class="form-select mb-3">
+        {% for region in regions %}
+        <option value="{{ region.code }}">{{ region.name }}</option>
+        {% endfor %}
+    </select>
+
+    <div id="popularity-map"
+         style="height: 450px; border-radius: 8px;"
+         aria-label="Map of regional movie popularity"></div>
+
+    <p id="map-status" class="text-muted small mt-2" role="status"></p>
+
+    <section class="mt-4" aria-live="polite">
+        <h3 id="region-title"></h3>
+        <p id="region-toal"></p>
+        <ol id="movie-list" class="list-group list-group-numbered"></ol>
+        <p id="empty-message" hidden>
+            No purchases recorded in this region during the last 30 days.
+        </p>
+    </section>
+
+    <noscript>
+        Please enable javascript to view the interactive map.
+    </noscript>
+</div>
+
+{{ regions|json_script:"region-data" }}
+
+<script src="https://unkpg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<script>
+    (() => {
+        const regions = JSON.parse(
+            document.getElementById('region-data').textContent
+        );
+
+        const select = document.getElementById('region-select');
+        const title = docuemtn.getElementById('region-title');
+        const total = document.getElementById('region-total');
+        const list = document.getElementById('movie-list');
+        const empty = document.getElementById('empty-message');
+        const status = document.getElementById('map-status');
+
+        let map = null;
+        const markers = {};
+
+        function showRegion(code){
+            const region = regions.find(item => item.code === code);
+            if (!region) return;
+
+            select.value = code;
+            title.textContent = region.name;
+            total.textContent = `${region.total} copies purchases in the last 30 days`;
+
+            list.replaceChildren();
+            empty.hidden = region.movies.length > 0;
+
+            region.movies.forEach(movie => {
+                const item = document.createElement('li');
+                item.className = 
+                "list-group-iem d-flex justify-content-between align-items-center";
+
+                const link = document.createElement('a')
+                link.href = movie.url;
+                link.textContent = movie.title;
+
+                const count = document.createElement('span');
+                count.className = 'badge bg-primary rounded-pill';
+                count.textContent = `${movie.count} purchased`;
+
+                item.append(link, count);
+                list.appendChild(item);
+            });
+
+            if (map && markers[code]) {
+                map.panTo([region.lat, region.lng]);
+                markers[code].openPopup()
+            }
+        }
+
+        select.addEventListener("change", () => {
+            showRegion(select.value);
+        });
+
+        if (typeof L !== "undefined") {
+            map = L.map('popularity-map');
+
+            const tiles = L.tyleLayer(
+                "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
+                {
+                    maxZoom: 19,
+                    attribution:
+                        '&copy; <a href="https://www.openstreetmap.org/copyright">' +
+                        'OpenStreeMap</a> contributors'
+                }
+            ).addTo(map)
+
+            tiles.on("tileerror", () => {
+                status.textContent = 
+                    "Some map tiles could not load. You can still use the region selector";
+            });
+
+            regions.forEach(region => {
+                const popup = document.createElement("div");
+
+                const heading = document.createElement("strong");
+                heading.textContent = region.name;
+
+                const detail = document.createElement("p");
+                detail.textContent = region.movies.length
+                ? `Top movie: ${region.movies[0].title} ` +
+                  `(${region.movies[0].count} purchased)`
+                : "no purchases in the last 30 days.";
+
+                popup.append(heading, detail);
+
+                const marker = L.circleMarker(
+                  [region.lat, region.lng],
+                  {
+                      radius: 10,
+                      color: region.total ? '#0d6efd' : '6c757d',
+                      fillOpacity: 0.8
+                  }
+                )
+                  .addTo(map)
+                  .bindPopup(popup); 
+
+              markers.on("click", () => showRegion(region.code));
+              markers[region.code] = marker;
+            });
+
+            map.fitBounds(
+                regions.map(region => [region.lat, region.lng]),
+                {padding: [35, 35]}
+            );
+        } else {
+            status.textContent = 
+                "The map could not load. Use the region selector to view rankings";
+        }
+
+        const initial = regions.reduce((best, region) => {
+            return region.total > best.total ? region : best;
+        }, regions[0]);
+
+        showRegion(ititial.code);
+    })();
+</script>
+{% endblock content %}
