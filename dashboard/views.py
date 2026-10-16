@@ -2,6 +2,7 @@ from django.shortcuts import render
 from django.contrib.admin.views.decorators import staff_member_required
 from django.db.models import Sum, Count
 from django.contrib.auth.models import User
+from movies.models import Movie
 
 from cart.models import Item
 
@@ -42,3 +43,32 @@ def top_buyers(request):
         'tied_with_top': tied_with_top,
     }
     return render(request, 'dashboard/top_buyers.html', {'template_data': template_data})
+
+@staff_member_required
+def top_movies(request):
+    most_purchased = (
+        Movie.objects
+        .annotate(purchase_count=Sum('item__quantity'))
+        .filter(purchase_count__gt=0)
+        .order_by('-purchase_count', 'name', 'id')
+        .first()
+    )
+
+    most_reviewed = (
+            Movie.objects
+            .annotate(review_count=Count('review'))
+            .filter(review_count__gt=0)
+            .order_by('-review_count', 'name', 'id')
+            .first()
+    )
+
+    template_data = {
+        'title' : 'Top Movies',
+        'most_purchased' : most_purchased,
+        'most_reviewed' : most_reviewed
+    }
+
+    return render(request, 'dashboard/top_movies.html', {'template_data': template_data})
+
+
+    
