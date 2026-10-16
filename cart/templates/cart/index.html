@@ -54,7 +54,7 @@
             <option value="">Select your region</option>
             {% for code, name in template_data.regions %}
               <option value="{{ code }}">{{ name }}</option>
-            { % endfor %}
+            {% endfor %}
           </select>
 
           <p class="small text-muted">
@@ -70,7 +70,7 @@
            class="btn bg-dark text-white mb-2">
           Log in to purchase
         </a>
-        {% end if %}
+        {% endif %}
 
 
 

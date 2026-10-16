@@ -2,7 +2,7 @@
 
 {% block content %}
 
-<link rel="stylesheet" href="https://unkpg.com/leaflet@1.9.4/dist/leaflet.css">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 
 <div class="container py-4">
     <h2>Local Popularity Map</h2>
@@ -35,7 +35,7 @@
 
     <section class="mt-4" aria-live="polite">
         <h3 id="region-title"></h3>
-        <p id="region-toal"></p>
+        <p id="region-total"></p>
         <ol id="movie-list" class="list-group list-group-numbered"></ol>
         <p id="empty-message" hidden>
             No purchases recorded in this region during the last 30 days.
@@ -49,7 +49,7 @@
 
 {{ regions|json_script:"region-data" }}
 
-<script src="https://unkpg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
 <script>
     (() => {
@@ -58,7 +58,7 @@
         );
 
         const select = document.getElementById('region-select');
-        const title = docuemtn.getElementById('region-title');
+        const title = document.getElementById('region-title');
         const total = document.getElementById('region-total');
         const list = document.getElementById('movie-list');
         const empty = document.getElementById('empty-message');
@@ -73,7 +73,7 @@
 
             select.value = code;
             title.textContent = region.name;
-            total.textContent = `${region.total} copies purchases in the last 30 days`;
+            total.textContent = `${region.total} copies purchased in the last 30 days`;
 
             list.replaceChildren();
             empty.hidden = region.movies.length > 0;
@@ -81,7 +81,7 @@
             region.movies.forEach(movie => {
                 const item = document.createElement('li');
                 item.className = 
-                "list-group-iem d-flex justify-content-between align-items-center";
+                "list-group-item d-flex justify-content-between align-items-center";
 
                 const link = document.createElement('a')
                 link.href = movie.url;
@@ -108,13 +108,13 @@
         if (typeof L !== "undefined") {
             map = L.map('popularity-map');
 
-            const tiles = L.tyleLayer(
+            const tiles = L.tileLayer(
                 "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
                 {
                     maxZoom: 19,
                     attribution:
                         '&copy; <a href="https://www.openstreetmap.org/copyright">' +
-                        'OpenStreeMap</a> contributors'
+                        'OpenStreetMap</a> contributors'
                 }
             ).addTo(map)
 
@@ -141,14 +141,14 @@
                   [region.lat, region.lng],
                   {
                       radius: 10,
-                      color: region.total ? '#0d6efd' : '6c757d',
+                      color: region.total ? '#0d6efd' : '#6c757d',
                       fillOpacity: 0.8
                   }
                 )
                   .addTo(map)
                   .bindPopup(popup); 
 
-              markers.on("click", () => showRegion(region.code));
+              marker.on("click", () => showRegion(region.code));
               markers[region.code] = marker;
             });
 
@@ -165,7 +165,7 @@
             return region.total > best.total ? region : best;
         }, regions[0]);
 
-        showRegion(ititial.code);
+        showRegion(initial.code);
     })();
 </script>
 {% endblock content %}

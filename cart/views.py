@@ -74,7 +74,7 @@ def purchase(request):
 
     if any(quantity < 1 or quantity > 90 for quantity in quantities.values()):
         return HttpResponseBadRequest(
-            "Each movie quantity must be btween 1 and 90"
+            "Each movie quantity must be between 1 and 90"
         )
     
     movies = list(Movie.objects.filter(id__in=quantities))
@@ -85,7 +85,7 @@ def purchase(request):
         )
     
     total = sum(
-        movie.prices + quantities[movie.id]
+        movie.price * quantities[movie.id]
         for movie in movies
     )
 
@@ -100,7 +100,7 @@ def purchase(request):
         Item.objects.bulk_create(
             Item(
                 movie=movie,
-                prices=movie.price,
+                price=movie.price,
                 order=order,
                 quantity = quantities[movie.id]
             )
@@ -158,7 +158,7 @@ def popularity_map(request):
         region = regions[purchase["order__region"]]
         region["total"] += purchase["purchase_count"]
 
-        if len(region["movies"] < 5):
+        if len(region["movies"]) < 5:
             region["movies"].append({
                 "title": purchase["movie__name"],
                 "count": purchase["purchase_count"],
