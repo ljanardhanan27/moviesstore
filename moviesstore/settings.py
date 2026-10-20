@@ -137,3 +137,7 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 MEDIA_URL = '/media/'
 
 LOGIN_URL = "accounts.login"
+
+# OpenStreetMap requires a Referer on browser tile requests. Send only the
+# site's origin to external HTTPS services, not page paths or query strings.
+SECURE_REFERRER_POLICY = "strict-origin-when-cross-origin"

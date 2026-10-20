@@ -115,3 +115,11 @@ class PopularityMapTests(TestCase):
         response = self.client.get(reverse("cart.popularity_map"))
         self.assertEqual(response.status_code, 200)
         self.assertTrue(all(r["total"] == 0 for r in response.context["regions"]))
+
+    def test_map_allows_origin_referrer_for_external_tiles(self):
+        response = self.client.get(reverse("cart.popularity_map"), secure=True)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            response.headers["Referrer-Policy"],
+            "strict-origin-when-cross-origin",
+        )
